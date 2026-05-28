@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>语音输入法 - 提高文本输入效率</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎙️ 语音输入法</h1>
+            <p class="subtitle">让语音输入更高效、更准确</p>
+        </header>
+
+        <div class="controls">
+            <div class="control-group">
+                <label for="language">识别语言：</label>
+                <select id="language">
+                    <option value="zh-CN">中文（普通话）</option>
+                    <option value="en-US">English (US)</option>
+                    <option value="ja-JP">日本語</option>
+                    <option value="ko-KR">한국어</option>
+                </select>
+            </div>
+
+            <div class="control-group">
+                <label for="continuous">连续识别：</label>
+                <input type="checkbox" id="continuous" checked>
+            </div>
+
+            <div class="control-group">
+                <label for="interimResults">实时结果：</label>
+                <input type="checkbox" id="interimResults" checked>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="text-area-container">
+                <div class="toolbar">
+                    <button id="copyBtn" class="btn btn-secondary" title="复制文本">
+                        📋 复制
+                    </button>
+                    <button id="clearBtn" class="btn btn-secondary" title="清空文本">
+                        🗑️ 清空
+                    </button>
+                    <button id="downloadBtn" class="btn btn-secondary" title="下载文本">
+                        💾 下载
+                    </button>
+                    <div class="char-count">
+                        字数：<span id="charCount">0</span>
+                    </div>
+                </div>
+                <textarea 
+                    id="outputText" 
+                    placeholder="点击语音按钮开始说话，或直接在文本框输入..."
+                    spellcheck="false"
+                ></textarea>
+            </div>
+
+            <div class="voice-control">
+                <button id="voiceBtn" class="btn-voice">
+                    <span class="mic-icon">🎤</span>
+                    <span class="btn-text">开始语音输入</span>
+                </button>
+                
+                <div class="status-indicator">
+                    <div class="status-dot"></div>
+                    <span class="status-text">就绪</span>
+                </div>
+
+                <div class="voice-visualizer" id="visualizer">
+                    <div class="bar"></div>
+                    <div class="bar"></div>
+                    <div class="bar"></div>
+                    <div class="bar"></div>
+                    <div class="bar"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="history-section">
+            <h2>📜 历史记录</h2>
+            <div class="history-list" id="historyList">
+                <p class="empty-hint">暂无历史记录</p>
+            </div>
+            <div class="history-controls">
+                <button id="clearHistoryBtn" class="btn btn-danger">清空历史</button>
+            </div>
+        </div>
+
+        <footer>
+            <p>💡 提示：支持中英文混合识别，说话时请保持清晰</p>
+            <p>🔒 所有语音识别在浏览器本地完成，保护您的隐私</p>
+        </footer>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
