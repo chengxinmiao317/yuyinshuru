@@ -30,23 +30,43 @@ class VoiceInputApp {
     }
 
     initRecognition() {
-        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            this.recognition = new SpeechRecognition();
-            this.recognition.continuous = true;
-            this.recognition.interimResults = true;
-            this.recognition.lang = this.languageSelect.value;
-            
-            this.recognition.onstart = () => this.onSpeechStart();
-            this.recognition.onend = () => this.onSpeechEnd();
-            this.recognition.onresult = (event) => this.onSpeechResult(event);
-            this.recognition.onerror = (event) => this.onSpeechError(event);
-        } else {
+        if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
             this.voiceBtn.disabled = true;
             this.voiceBtn.innerHTML = '<span class="btn-text">浏览器不支持语音识别</span>';
-            this.statusText.textContent = '不支持';
+            this.statusText.textContent = '❌ 不支持';
             this.statusDot.style.background = '#dc3545';
-            alert('您的浏览器不支持语音识别功能，请使用 Chrome、Edge 或 Safari 浏览器。');
+            this.showToast('您的浏览器不支持语音识别，请使用 Chrome、Edge 或 Safari');
+            return;
+        }
+
+        if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost') {
+            this.statusText.textContent = '⚠️ 需要 HTTPS';
+            this.statusDot.style.background = '#ffc107';
+            this.showToast('语音识别需要 HTTPS 连接或 localhost，部署到 GitHub Pages 后即可正常使用');
+        }
+
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        this.recognition = new SpeechRecognition();
+        this.recognition.continuous = true;
+        this.recognition.interimResults = true;
+        this.recognition.lang = this.languageSelect.value;
+        this.recognition.maxAlternatives = 1;
+        
+        this.recognition.onstart = () => this.onSpeechStart();
+        this.recognition.onend = () => this.onSpeechEnd();
+        this.recognition.onresult = (event) => this.onSpeechResult(event);
+        this.recognition.onerror = (event) => this.onSpeechError(event);
+        this.recognition.onnomatch = () => this.onNoMatch();
+    }
+
+    async checkMicrophonePermission() {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            stream.getTracks().forEach(track => track.stop());
+            return true;
+        } catch (err) {
+            console.error('麦克风权限错误:', err);
+            return false;
         }
     }
 
@@ -81,14 +101,39 @@ class VoiceInputApp {
         this.clearHistoryBtn.addEventListener('click', () => this.clearHistory());
     }
 
-    toggleRecording() {
+    async toggleRecording() {
         if (!this.recognition) return;
 
         if (this.isRecording) {
             this.recognition.stop();
-        } else {
-            this.recognition.start();
+            return;
         }
+
+        const hasPermission = await this.checkMicrophonePermission();
+        if (!hasPermission) {
+            this.showToast('请先允许麦克风权限');
+            this.statusText.textContent = '⚠️ 权限未授权';
+            this.statusDot.style.background = '#ffc107';
+            
+            setTimeout(() => {
+                if (!this.isRecording) {
+                    this.statusText.textContent = '就绪';
+                    this.statusDot.style.background = '#28a745';
+                }
+            }, 3000);
+            return;
+        }
+
+        try {
+            this.recognition.start();
+        } catch (err) {
+            console.error('启动语音识别失败:', err);
+            this.showToast('无法启动语音识别，请重试');
+        }
+    }
+
+    onNoMatch() {
+        this.showToast('未识别到语音，请说得更清楚一些');
     }
 
     onSpeechStart() {
